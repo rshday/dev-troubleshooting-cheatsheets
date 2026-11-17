@@ -2,7 +2,8 @@
 
 Short, field-tested notes for the failures that eat an afternoon: a pod that keeps getting
 killed, a `tsc` wall of errors, a shell script that "worked on my machine", a cron job that
-never runs, a regex that hangs the browser.
+never runs, a regex that hangs the browser, a Next.js upgrade that builds but 500s, a Postgres
+policy that reports infinite recursion.
 
 Each sheet is a decision table first and an explanation second — the goal is to get from the
 symptom to the actual cause in a couple of minutes.
@@ -15,6 +16,9 @@ symptom to the actual cause in a couple of minutes.
 | [typescript-strict-errors.md](typescript-strict-errors.md) | The strict-mode error codes you actually hit, and the fix that is not `as any` |
 | [linux-bash-safety.md](linux-bash-safety.md) | `set -euo pipefail`, quoting, traps, safe `rm`, `xargs`, reading files line by line |
 | [cron-and-regex-patterns.md](cron-and-regex-patterns.md) | Cron syntax pitfalls and DST, plus regex patterns that backtrack or break |
+| [nextjs-16-migration-gotchas.md](nextjs-16-migration-gotchas.md) | The five Next.js 16 breaks: async `params`, Turbopack vs a `webpack` config, `middleware.ts` → `proxy.ts`, missing `default.js`, Cache Components |
+| [postgres-rls-and-pooling.md](postgres-rls-and-pooling.md) | `42P17` infinite recursion in policies, `security definer` checks, `UPDATE ... RETURNING` returning nothing, pooler exhaustion and prepared statements |
+
 ## Browser tools used while debugging
 
 All client-side, nothing is uploaded: [JSON formatter](https://www.ryuslog.com/tools/json) ·
@@ -23,7 +27,10 @@ All client-side, nothing is uploaded: [JSON formatter](https://www.ryuslog.com/t
 [base64](https://www.ryuslog.com/tools/base64) · [URL encoder](https://www.ryuslog.com/tools/url) ·
 [hash](https://www.ryuslog.com/tools/hash) · [UUID](https://www.ryuslog.com/tools/uuid) ·
 [timestamp](https://www.ryuslog.com/tools/timestamp) · [cron parser](https://www.ryuslog.com/tools/cron) ·
-[colour + contrast](https://www.ryuslog.com/tools/color)
+[colour + contrast](https://www.ryuslog.com/tools/color) ·
+[SQL formatter](https://www.ryuslog.com/tools/sql) ·
+[CSV ↔ JSON](https://www.ryuslog.com/tools/csv-json) ·
+[cURL → fetch / Python / Go](https://www.ryuslog.com/tools/curl)
 
 Longer write-ups live at **[RYUSLOG DEV](https://www.ryuslog.com)**.
 
