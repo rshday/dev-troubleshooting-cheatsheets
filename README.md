@@ -18,6 +18,8 @@ symptom to the actual cause in a couple of minutes.
 | [cron-and-regex-patterns.md](cron-and-regex-patterns.md) | Cron syntax pitfalls and DST, plus regex patterns that backtrack or break |
 | [nextjs-16-migration-gotchas.md](nextjs-16-migration-gotchas.md) | The five Next.js 16 breaks: async `params`, Turbopack vs a `webpack` config, `middleware.ts` → `proxy.ts`, missing `default.js`, Cache Components |
 | [postgres-rls-and-pooling.md](postgres-rls-and-pooling.md) | `42P17` infinite recursion in policies, `security definer` checks, `UPDATE ... RETURNING` returning nothing, pooler exhaustion and prepared statements |
+| [nextjs-docker-standalone-and-ssr.md](nextjs-docker-standalone-and-ssr.md) | `output: "standalone"` images missing `.next/static`, `public/` and the `sharp` binary; `@supabase/ssr` cookie adapters and a session that flips signed-out; `redirect()` swallowed by a `try/catch`, the 1 MB action body limit |
+| [python-asyncpg-pgbouncer-and-fastapi-cors.md](python-asyncpg-pgbouncer-and-fastapi-cors.md) | `DuplicatePreparedStatement` on a PgBouncer/Supabase transaction pooler, retryable pooler disconnects, pool sizing; FastAPI `CORSMiddleware` wildcard-with-credentials, the 500 that looks like CORS, `SameSite` |
 
 ## Browser tools used while debugging
 
