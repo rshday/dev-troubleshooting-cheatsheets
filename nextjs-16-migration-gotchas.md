@@ -116,6 +116,23 @@ export const config = { matcher: ['/app/:path*'] };
 | `skipMiddlewareUrlNormalize` | Config flag renamed to `skipProxyUrlNormalize`; the old key is ignored silently | Update `next.config` |
 | Auth redirect "works locally, not in prod" | The redirect ran in middleware that no longer executes | Check the network tab for the redirect status |
 
+Assert the gate instead of trusting the rename. After `next build`, start the production server and
+hit the protected route with no cookie on it:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' http://localhost:3000/app
+# 307 http://localhost:3000/login   <- proxy ran
+# 200 http://localhost:3000/app     <- proxy never ran
+```
+
+`NextResponse.redirect()` defaults to `307` and takes `308` when you pass it. Without `-L` curl
+stops at the redirect and `%{redirect_url}` prints the `Location` it would have followed, so the
+status alone is the assertion. In CI:
+
+```bash
+test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:3000/app)" = 307
+```
+
 This is the most dangerous item on the list because nothing fails: the app builds, pages render,
 and an auth gate simply stops existing.
 
@@ -179,7 +196,8 @@ npm run build                               # Turbopack build (or --webpack to i
 ```
 
 1. Fix `params` / `searchParams` errors first — they cascade into confusing runtime failures.
-2. Then rename `middleware.ts` → `proxy.ts` and change the export name.
+2. Then rename `middleware.ts` → `proxy.ts` and change the export name, and curl a protected
+   route on the production build: `307` to `/login` means the proxy ran, `200` means it did not.
 3. Then add the missing `default.js` files.
 4. Leave `cacheComponents` off until the build is green; it is a separate change.
 5. Diff a production build's route list (`next build` output) against 15. Missing routes mean a
