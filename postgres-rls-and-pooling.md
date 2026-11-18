@@ -48,9 +48,38 @@ create policy members_read on members for select
   using (public.is_member(project_id));
 ```
 
+`stable` does not make that helper cheap. It promises one value for the statement, not one call: PostgreSQL does not inline a
+function declared `security definer` or carrying a `set` clause, and `is_member(project_id)` passes a column, so nothing can be
+hoisted out of the row loop. The executor calls it once per row the policy checks, and each call runs its own query. Return the
+set instead and let the planner evaluate it once:
+
+```sql
+create or replace function public.my_projects()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.project_id from members m where m.user_id = (select auth.uid());
+$$;
+
+revoke all on function public.my_projects() from public;
+grant execute on function public.my_projects() to authenticated;
+
+create policy members_read on members for select
+  using (project_id in (select public.my_projects()));
+```
+
+The subquery mentions nothing from the row, so it is an uncorrelated subplan: evaluated once before the scan, ids hashed, one
+lookup per row. Keep `is_member(p_project uuid)` for checks against a single id that comes from the statement, and use
+`my_projects()` wherever the policy compares the row's own project column. `explain (analyze, costs off)` shows a
+`SubPlan`/`InitPlan` line when the work happens once, and a call inside `Filter:` when it happens per row.
+
 | Approach | Breaks recursion | Watch out for |
 |---|---|---|
 | `SECURITY DEFINER` helper | Yes | Must pin `search_path` and revoke `public` execute |
+| Set-returning helper (`my_projects()`) + `in (select …)` | Yes | Definer rules as above; the subplan runs once per statement |
 | Denormalized owner column on the row | Yes | Has to stay in sync; no role granularity |
 | View with `security_invoker = false` | Sometimes | Owner must bypass RLS; hides columns |
 | Claims from `auth.jwt()` | Yes | Stale until the token refreshes |
@@ -83,9 +112,9 @@ table. `FOR UPDATE` policies also need the `SELECT` policy to see the row at all
 ## 4. Definer functions fail-safe checks
 
 ```sql
-select proname, prosecdef, proconfig
-from pg_proc where proname = 'is_member';
--- prosecdef must be true; proconfig should contain search_path=public
+select proname, prosecdef, proconfig, provolatile
+from pg_proc where proname in ('is_member', 'my_projects');
+-- prosecdef must be true; proconfig should contain search_path=public; provolatile = 's'
 ```
 
 | Mistake | Result |
@@ -99,8 +128,11 @@ With `FORCE`, the escape hatch is a separate owner role with `BYPASSRLS`
 (`alter role app_owner bypassrls`), or dropping `FORCE` on the membership table.
 
 Also make the check cheap: `(select auth.uid())` is hoisted to an `InitPlan` and evaluated once per
-statement, while bare `auth.uid()` is a function call per row. Pair it with an index on
-`(project_id, user_id)` or every policy check becomes a sequential scan.
+statement, while bare `auth.uid()` is a function call per row. The same rule decides a definer helper: passing
+`project_id` gives the planner a different value on every row, so it is called on every row — only the
+argument-free `in (select public.my_projects())` form pulls the work out of the loop. Pair it with an index on
+`(project_id, user_id)` for bounded checks and `(user_id, project_id)` for the helper's own query, or every
+policy check becomes a sequential scan.
 
 ## 5. Pooling in serverless
 
@@ -155,7 +187,9 @@ setting the claim by hand reproduces a user's view without a real token.
 1. Reproduce as the real role (`set local role authenticated`), never as `postgres` — the owner
    bypasses RLS and hides the bug.
 2. Read the relation name in 42P17 and find the policy whose expression mentions that relation.
-3. Check the helper function's `prosecdef` and `proconfig` before rewriting the policy.
+3. Check the helper function's `prosecdef`, `proconfig` and `provolatile` before rewriting the policy.
+   Then check how the policy calls it: a `bool` helper given the row's column runs per row (`stable` does not
+   change that), an argument-free `setof` helper compared with `in (select …)` runs once per statement.
 4. For empty results instead of errors, look for a missing `SELECT` policy.
 5. For connection errors, count `pg_stat_activity` by state before touching pool sizes.
 
