@@ -24,6 +24,8 @@ symptom to the actual cause in a couple of minutes.
 | [nextjs-supabase-ssr-session.md](nextjs-supabase-ssr-session.md) | `@supabase/ssr` sessions flipping signed-out: async `cookies()`, illegal writes in a render, proxy refresh lost, `NavigatorLockAcquireTimeoutError` |
 | [python-pip-pep668-and-venvs.md](python-pip-pep668-and-venvs.md) | `error: externally-managed-environment` (PEP 668): the marker file, venv vs pipx vs `apt`, distro Docker images, CI runners, `--user` being patched off, repairing a broken system Python |
 | [nodejs-npm-eresolve-and-peer-deps.md](nodejs-npm-eresolve-and-peer-deps.md) | `ERESOLVE unable to resolve dependency tree`: reading `peer … from …`, `overrides` and `$package`, `--legacy-peer-deps` vs `--force`, workspace roots, stale lockfiles |
+| [docker-daemon-socket-and-contexts.md](docker-daemon-socket-and-contexts.md) | `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`: endpoint resolution order, socket inspection, systemd startup errors, group permissions, containers, Docker Desktop/WSL, rootless, SSH and TLS remotes |
+| [nginx-502-upstream-errors.md](nginx-502-upstream-errors.md) | `502 Bad Gateway` triage from the error log: `111` vs `110`, premature close, `no live upstreams`, header buffers, `localhost` across containers, health checks and resolvers, PHP-FPM |
 
 ## Browser tools used while debugging
 
