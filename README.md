@@ -26,6 +26,8 @@ symptom to the actual cause in a couple of minutes.
 | [nodejs-npm-eresolve-and-peer-deps.md](nodejs-npm-eresolve-and-peer-deps.md) | `ERESOLVE unable to resolve dependency tree`: reading `peer … from …`, `overrides` and `$package`, `--legacy-peer-deps` vs `--force`, workspace roots, stale lockfiles |
 | [docker-daemon-socket-and-contexts.md](docker-daemon-socket-and-contexts.md) | `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`: endpoint resolution order, socket inspection, systemd startup errors, group permissions, containers, Docker Desktop/WSL, rootless, SSH and TLS remotes |
 | [nginx-502-upstream-errors.md](nginx-502-upstream-errors.md) | `502 Bad Gateway` triage from the error log: `111` vs `110`, premature close, `no live upstreams`, header buffers, `localhost` across containers, health checks and resolvers, PHP-FPM |
+| [nextjs-cache-components-prerender.md](nextjs-cache-components-prerender.md) | `cacheComponents: true` and the `uncached or runtime data during prerendering` build error: `<Suspense>` placement, `"use cache"` with `cacheLife`/`cacheTag`, `instant = false`, the `revalidateTag` profile argument, Node 20.9/Turbopack prerequisites |
+| [kubernetes-cgroup-v2-migration.md](kubernetes-cgroup-v2-migration.md) | Kubernetes 1.35 removing cgroup v1: a node that never registers, `failCgroupV1: false` as a dated escape hatch, the removed `--pod-infra-container-image` flag, containerd 1.x's last release, ipvs deprecation, upgrade order |
 
 ## Browser tools used while debugging
 
