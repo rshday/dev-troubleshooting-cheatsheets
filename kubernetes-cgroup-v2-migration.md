@@ -20,6 +20,20 @@ exit with an unknown flag.
 kernel argument in the launch template (`systemd.unified_cgroup_hierarchy=0`) or a base image older
 than 2022.
 
+The argument often outlives the image it was written for: the AMI moves to Amazon Linux 2023 or
+Ubuntu 22.04/24.04 (both cgroup v2 by default) while the launch template's `UserData`, or the
+Packer/Ansible/cloud-init step that baked the image, still re-applies
+`systemd.unified_cgroup_hierarchy=0` at boot — `grubby --update-kernel=ALL --args=…` on the RHEL/AL
+family, `GRUB_CMDLINE_LINUX` + `update-grub` on Ubuntu. Nothing in the image metadata shows it, and
+earlier kubelets accept v1, so it only surfaces when the kubelet itself moves to 1.35.
+
+```bash
+# find the argument in the IaC, not just on the running node
+grep -rn "unified_cgroup_hierarchy" infra/ packer/ ansible/ cloud-init/
+grep cgroup /proc/cmdline            # on a booted node: what it actually got
+sudo grubby --info=ALL | grep args   # or: grep GRUB_CMDLINE_LINUX /etc/default/grub
+```
+
 ## Fixes
 
 ```yaml
